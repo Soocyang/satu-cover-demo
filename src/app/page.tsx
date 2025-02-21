@@ -8,7 +8,7 @@ export default function HomePage() {
         <h1 className="text-2xl font-bold text-center">Hello World!</h1>
 
         <Image
-          src="/assets/logo.png"
+          src="/images/logo.png"
           width={160}
           height={160}
           alt="Logo of the app"
