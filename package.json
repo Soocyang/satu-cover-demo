@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "check-env": "chmod +x scripts/check-env.sh && ./scripts/check-env.sh",
+    "dev": "npm run check-env && next dev",
+    "build": "npm run check-env && next build",
+    "start": "npm run check-env && next start",
     "lint": "next lint",
     "lint-staged": "lint-staged",
     "format": "prettier --check .",
