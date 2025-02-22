@@ -1,16 +1,26 @@
-import Image from 'next/image';
+import UserCard from '@/components/user-card';
+import { getAllUsersData } from './actions';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const data = await getAllUsersData();
+
   return (
-    <>
-      <h1 className="text-2xl font-bold">Hello World!</h1>
+    <div className="w-96 md:w-[720px]">
+      <h1 className="text-3xl font-bold mb-4">Users</h1>
 
-      <Image
-        src="/images/logo.png"
-        width={160}
-        height={160}
-        alt="Logo of the app"
-      />
-    </>
+      <div className="flex flex-col gap-2">
+        {data.map((item) => (
+          <UserCard
+            key={item.id}
+            id={item.id}
+            email={item.email}
+            first_name={item.first_name}
+            last_name={item.last_name}
+            avatar={item.avatar}
+            isEmailMasked={Math.random() > 0.5}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
