@@ -1,11 +1,11 @@
+import { DemoRibbon } from '@/components/layout/demo-flag';
+import AuthProvider from '@/providers/auth';
 import type { Metadata } from 'next';
 import './globals.css';
-import { AuthProvider } from '@/providers';
-import { DemoRibbon } from '@/components/layout/demo-flag';
 
 export const metadata: Metadata = {
   title: 'SatuCover | Demo',
-  description: 'Customer portal',
+  description: 'SatuCover Customer portal',
 };
 
 export default function RootLayout({
