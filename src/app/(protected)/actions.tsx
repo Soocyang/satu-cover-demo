@@ -42,5 +42,6 @@ export async function getAllUsersData(): Promise<User[]> {
 
   const remainingPage = await Promise.all(pendingRemainingPage);
 
+  // TODO:  display only users with first name starting with “G”, or last name starting with “W”
   return [...firstPage.data, ...remainingPage.map((res) => res.data).flat()];
 }
