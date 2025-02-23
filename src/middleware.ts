@@ -1,8 +1,12 @@
 import { auth } from '@/auth';
-import { PUBLIC_ROUTES } from '@/configs/routes';
+import { CONFIGS } from './lib/configs';
+import { PublicRoutes } from './types/common';
 
 export default auth((req) => {
-  if (!req.auth && !PUBLIC_ROUTES.includes(req.nextUrl.pathname)) {
+  if (
+    !req.auth &&
+    !CONFIGS.PUBLIC_ROUTES.includes(req.nextUrl.pathname as PublicRoutes)
+  ) {
     const newUrl = new URL('/unauthorized', req.nextUrl.origin);
     return Response.redirect(newUrl);
   }
