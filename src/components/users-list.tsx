@@ -1,16 +1,16 @@
 'use client';
 
 import UserCard from '@/components/user-card';
+import { useAppDispatch, useAppSelector } from '@/store';
+import {
+  handleToggleEmailMask,
+  selectCurrentUserId,
+} from '@/store/usersListSlice';
 import { User } from '@/types/user';
-import { useState } from 'react';
 
 export default function UsersList({ users }: { users: User[] }) {
-  // TODO: refactor to use redux
-  const [selectedUerId, setSelectedUerId] = useState<number | null>(null);
-
-  const handleToggleEmailMask = (id: number) => {
-    setSelectedUerId(id === selectedUerId ? null : id);
-  };
+  const currentUserId = useAppSelector(selectCurrentUserId);
+  const dispatch = useAppDispatch();
 
   return (
     <div className="flex flex-col gap-2">
@@ -22,8 +22,8 @@ export default function UsersList({ users }: { users: User[] }) {
           first_name={item.first_name}
           last_name={item.last_name}
           avatar={item.avatar}
-          isEmailMasked={selectedUerId !== item.id}
-          onUnmaskEmail={() => handleToggleEmailMask(item.id)}
+          isEmailMasked={currentUserId !== item.id}
+          onUnmaskEmail={() => dispatch(handleToggleEmailMask(item.id))}
         />
       ))}
     </div>
