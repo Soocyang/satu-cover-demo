@@ -5,6 +5,7 @@ import { User } from '@/types/user';
 import { useState } from 'react';
 
 export default function UsersList({ users }: { users: User[] }) {
+  // TODO: refactor to use redux
   const [selectedUerId, setSelectedUerId] = useState<number | null>(null);
 
   const handleToggleEmailMask = (id: number) => {
