@@ -1,16 +1,17 @@
 'use client';
 
-import { PUBLIC_ROUTES } from '@/configs/routes';
+import { CONFIGS } from '@/lib/configs';
+import { cn } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import React, { useMemo } from 'react';
 import { Badge } from '../ui/badge';
-import { cn } from '@/lib/utils';
+import { PublicRoutes } from '@/types/common';
 
 function DemoRibbon() {
   const pathname = usePathname();
   const isPublicRoute = useMemo(
-    () => PUBLIC_ROUTES.includes(pathname),
+    () => CONFIGS.PUBLIC_ROUTES.includes(pathname as PublicRoutes),
     [pathname],
   );
 

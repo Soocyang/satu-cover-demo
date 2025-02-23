@@ -1,3 +1,5 @@
+import { CONFIGS } from '@/lib/configs';
+
 export type ListRequest = Partial<{
   page: number;
   per_page: number;
@@ -11,3 +13,5 @@ export type ListResponse<ListItem> = {
   total_pages: number;
   data: ListItem[];
 };
+
+export type PublicRoutes = (typeof CONFIGS.PUBLIC_ROUTES)[number];
