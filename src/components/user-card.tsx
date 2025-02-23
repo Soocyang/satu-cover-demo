@@ -2,10 +2,8 @@
 
 import { maskEmail } from '@/lib/utils';
 import { DisplayUser } from '@/types/user';
-import { AvatarFallback } from '@radix-ui/react-avatar';
 import { EllipsisVerticalIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
-import React from 'react';
-import { Avatar, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card, CardDescription, CardTitle } from './ui/card';
 import {
@@ -15,6 +13,10 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
+type UserCardProps = DisplayUser & {
+  onUnmaskEmail: (id: number) => void;
+};
+
 export default function UserCard({
   id,
   email,
@@ -22,7 +24,8 @@ export default function UserCard({
   last_name,
   avatar,
   isEmailMasked,
-}: DisplayUser): React.JSX.Element {
+  onUnmaskEmail,
+}: UserCardProps) {
   return (
     <Card className="hover:bg-secondary">
       <div className="flex gap-4 p-4">
@@ -35,7 +38,9 @@ export default function UserCard({
           <CardTitle>
             {first_name} {last_name}
           </CardTitle>
-          <CardDescription>{maskEmail(email)}</CardDescription>
+          <CardDescription>
+            {isEmailMasked ? maskEmail(email) : email}
+          </CardDescription>
         </div>
 
         <DropdownMenu>
@@ -46,13 +51,9 @@ export default function UserCard({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-auto">
-            <DropdownMenuItem
-              onClick={() =>
-                console.log(`WIP masked email: clicked on userId: ${id}`)
-              }
-            >
-              {isEmailMasked ? <EyeOffIcon /> : <EyeIcon />}
-              <span>Show/hide full email</span>
+            <DropdownMenuItem onClick={() => onUnmaskEmail(id)}>
+              {isEmailMasked ? <EyeIcon /> : <EyeOffIcon />}
+              <span>{isEmailMasked ? 'Show' : 'Hide'} email</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
