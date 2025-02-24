@@ -57,6 +57,17 @@ const config: Config = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      borderWidth: {
+        header: 'var(--header-border-width)',
+      },
+      height: {
+        header: 'var(--header-height)',
+        footer: 'var(--footer-height)',
+      },
+      minHeight: {
+        'page-content':
+          'calc(100vh - var(--header-height) - var(--header-border-width) - var(--footer-height))',
+      },
     },
   },
   plugins: [tailwindcssAnimatePlugin],
