@@ -9,8 +9,8 @@ export default async function Header() {
   const session = await auth();
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background">
-      <div className="flex h-16 items-center overflow-y-hidden px-8">
+    <header className="sticky top-0 z-10 border-b-header bg-background">
+      <div className="flex h-header items-center overflow-y-hidden px-8">
         <div className="relative">
           <Button asChild variant={'ghost'} className="font-sans text-lg px-2">
             <Link href={'/'}>
