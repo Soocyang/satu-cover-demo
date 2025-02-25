@@ -50,7 +50,7 @@ export async function getAllUsersData(): Promise<User[]> {
   return results;
 }
 
-function transformUsersList(usersList: User[]) {
+export function transformUsersList(usersList: User[]) {
   return usersList.filter(
     (user) => user.first_name.startsWith('G') || user.last_name.startsWith('W'),
   );
