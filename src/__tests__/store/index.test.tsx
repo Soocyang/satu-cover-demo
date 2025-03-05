@@ -1,54 +1,39 @@
-import { RootState, store, useAppDispatch, useAppSelector } from '@/store';
-import { handleToggleEmailMask } from '@/store/usersListSlice';
-import { act, renderHook } from '@testing-library/react';
-import React from 'react';
-import { Provider } from 'react-redux';
-import { beforeEach, describe, expect, it } from 'vitest';
-
-// Wrapper component for testing hooks
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <Provider store={store}>{children}</Provider>
-);
+import { store } from '@/store';
+import usersListReducer, { UsersListState } from '@/store/usersListSlice';
+import { configureStore } from '@reduxjs/toolkit';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Redux Store', () => {
-  it('should have the usersList reducer registered', () => {
-    const state = store.getState();
+  let testStore: ReturnType<
+    typeof configureStore<{
+      usersList: UsersListState;
+    }>
+  >;
 
-    expect(state).toHaveProperty('usersList');
+  beforeEach(() => {
+    // Create a fresh test store for each test
+    vi.resetAllMocks();
+
+    testStore = configureStore({
+      reducer: {
+        usersList: usersListReducer,
+      },
+    });
   });
 
-  describe('Custom Hooks', () => {
-    beforeEach(() => {
-      store.dispatch(handleToggleEmailMask(null));
-    });
+  it('should create a store with the correct reducers', () => {
+    // Verify that the store has the expected structure
+    expect(store.getState()).toHaveProperty('usersList');
+  });
 
-    it('useAppSelector should select data from the store', () => {
-      // Setup test state
-      store.dispatch(handleToggleEmailMask(42));
-
-      // Test selector hook
-      const { result } = renderHook(
-        () =>
-          useAppSelector((state: RootState) => state.usersList.currentUserId),
-        { wrapper },
-      );
-
-      // Verify selection works
-      expect(result.current).toBe(42);
-    });
-
-    it('useAppDispatch should dispatch actions to the store', () => {
-      // Render dispatch hook
-      const { result } = renderHook(() => useAppDispatch(), { wrapper });
-
-      // Use act to wrap the dispatch operation
-      act(() => {
-        result.current(handleToggleEmailMask(5));
-      });
-
-      // Verify state was updated via the dispatch
-      const state = store.getState();
-      expect(state.usersList.currentUserId).toBe(5);
+  it('should use the usersListReducer for the usersList slice', () => {
+    // Initial state should match in both stores
+    expect(store.getState().usersList).toEqual(testStore.getState().usersList);
+    expect(store.getState().usersList).toEqual({
+      unmaskedUser: null,
+      isLoading: false,
+      loadingUserId: null,
+      error: null,
     });
   });
 });

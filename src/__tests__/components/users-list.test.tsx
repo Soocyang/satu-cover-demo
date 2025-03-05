@@ -1,130 +1,191 @@
-import UserCard from '@/components/user-card';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import UsersList from '@/components/users-list';
-import { useAppDispatch, useAppSelector } from '@/store';
-import { handleToggleEmailMask } from '@/store/usersListSlice';
-import { User } from '@/types/user';
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as storeHooks from '@/store';
+import * as usersListSlice from '@/store/usersListSlice';
 
-// Mock dependencies
+// Mock the UserCard component
 vi.mock('@/components/user-card', () => ({
-  default: vi.fn(() => <div data-testid="user-card-mock" />),
+  default: ({
+    id,
+    email,
+    first_name,
+    last_name,
+    isEmailMasked,
+    isLoading,
+    onUnmaskEmail,
+  }: {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    isEmailMasked: boolean;
+    isLoading: boolean;
+    onUnmaskEmail: () => void;
+  }) => (
+    <div data-testid={`user-card-${id}`}>
+      <div data-testid={`user-${id}-name`}>
+        {first_name} {last_name}
+      </div>
+      <div data-testid={`user-${id}-email`}>{email}</div>
+      <div data-testid={`user-${id}-masked`}>{isEmailMasked.toString()}</div>
+      <div data-testid={`user-${id}-loading`}>{isLoading.toString()}</div>
+      <button data-testid={`unmask-button-${id}`} onClick={onUnmaskEmail}>
+        Unmask Email
+      </button>
+    </div>
+  ),
 }));
 
+// Mock Redux hooks
 vi.mock('@/store', () => ({
   useAppDispatch: vi.fn(),
   useAppSelector: vi.fn(),
 }));
 
+// Mock Redux actions and selectors
 vi.mock('@/store/usersListSlice', () => ({
-  handleToggleEmailMask: vi.fn(),
-  selectCurrentUserId: 'selectCurrentUserId',
+  fetchUserById: vi.fn((id) => ({ type: 'users/fetchUserById', payload: id })),
+  resetUnmaskedUser: vi.fn(() => ({ type: 'users/resetUnmaskedUser' })),
+  selectUnmaskedUser: vi.fn(),
+  selectIsLoading: vi.fn(),
+  selectLoadingUserId: vi.fn(),
 }));
 
-describe('UsersList', () => {
-  const mockUsers: User[] = [
-    {
-      id: 1,
-      email: 'john.doe@example.com',
-      first_name: 'John',
-      last_name: 'Doe',
-      avatar: 'https://example.com/avatar1.jpg',
-    },
-    {
-      id: 2,
-      email: 'jane.smith@example.com',
-      first_name: 'Jane',
-      last_name: 'Smith',
-      avatar: 'https://example.com/avatar2.jpg',
-    },
-  ];
+// Mock data
+const mockUsers = [
+  {
+    id: 1,
+    email: '****@example.com',
+    first_name: 'George',
+    last_name: 'Walker',
+    avatar: 'https://example.com/avatar1.png',
+  },
+  {
+    id: 2,
+    email: '****@example.com',
+    first_name: 'Grace',
+    last_name: 'Smith',
+    avatar: 'https://example.com/avatar2.png',
+  },
+];
 
+describe('UsersList Component', () => {
   const mockDispatch = vi.fn();
-
-  // Properly type the mocked functions
-  const mockedUseAppDispatch = useAppDispatch as unknown as ReturnType<
-    typeof vi.fn
-  >;
-  const mockedUseAppSelector = useAppSelector as unknown as ReturnType<
-    typeof vi.fn
-  >;
-  const mockedUserCard = UserCard as unknown as ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockedUseAppDispatch.mockReturnValue(mockDispatch);
+    vi.mocked(storeHooks.useAppDispatch).mockReturnValue(mockDispatch);
   });
 
-  it('renders a UserCard for each user in the array', () => {
-    mockedUseAppSelector.mockReturnValue(null); // No user selected
+  it('renders all user cards with masked emails', () => {
+    // Setup selectors for this test
+    vi.mocked(storeHooks.useAppSelector).mockImplementation((selector) => {
+      if (selector === usersListSlice.selectUnmaskedUser) return null;
+      if (selector === usersListSlice.selectIsLoading) return false;
+      if (selector === usersListSlice.selectLoadingUserId) return null;
+      return undefined;
+    });
 
     render(<UsersList users={mockUsers} />);
 
-    // Check if UserCard is rendered for each user
-    expect(mockedUserCard).toHaveBeenCalledTimes(2);
-    expect(screen.getAllByTestId('user-card-mock')).toHaveLength(2);
-  });
+    // Check if all user cards are rendered
+    expect(screen.getByTestId('user-card-1')).toBeInTheDocument();
+    expect(screen.getByTestId('user-card-2')).toBeInTheDocument();
 
-  it('passes correct props to UserCard components', () => {
-    mockedUseAppSelector.mockReturnValue(2); // User with ID 2 is selected
-
-    render(<UsersList users={mockUsers} />);
-
-    // Check props for first user
-    expect(mockedUserCard).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 1,
-        email: 'john.doe@example.com',
-        first_name: 'John',
-        last_name: 'Doe',
-        avatar: 'https://example.com/avatar1.jpg',
-        isEmailMasked: true, // Current user ID (2) !== item.id (1)
-      }),
-      expect.anything(),
+    // Check user names and emails
+    expect(screen.getByTestId('user-1-name').textContent).toBe('George Walker');
+    expect(screen.getByTestId('user-1-email').textContent).toBe(
+      '****@example.com',
     );
-
-    // Check props for second user
-    expect(mockedUserCard).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 2,
-        email: 'jane.smith@example.com',
-        first_name: 'Jane',
-        last_name: 'Smith',
-        avatar: 'https://example.com/avatar2.jpg',
-        isEmailMasked: false, // Current user ID (2) === item.id (2)
-      }),
-      expect.anything(),
-    );
+    expect(screen.getByTestId('user-1-masked').textContent).toBe('true');
   });
 
-  it('provides onUnmaskEmail callback that dispatches handleToggleEmailMask action', () => {
-    mockedUseAppSelector.mockReturnValue(null);
+  it('dispatches fetchUserById when unmask button is clicked', () => {
+    // Setup selectors for this test
+    vi.mocked(storeHooks.useAppSelector).mockImplementation((selector) => {
+      if (selector === usersListSlice.selectUnmaskedUser) return null;
+      if (selector === usersListSlice.selectIsLoading) return false;
+      if (selector === usersListSlice.selectLoadingUserId) return null;
+      return undefined;
+    });
 
     render(<UsersList users={mockUsers} />);
 
-    // Get the onUnmaskEmail callback from the first UserCard call
-    const onUnmaskEmailCallback = mockedUserCard.mock.calls[0][0].onUnmaskEmail;
+    // Click the unmask button for user 1
+    fireEvent.click(screen.getByTestId('unmask-button-1'));
 
-    // Verify it's a function
-    expect(typeof onUnmaskEmailCallback).toBe('function');
-
-    // Call the callback
-    onUnmaskEmailCallback();
-
-    // Verify that dispatch was called once
-    expect(mockDispatch).toHaveBeenCalledTimes(1);
-
-    // Verify that handleToggleEmailMask was called with the right user ID
-    expect(handleToggleEmailMask).toHaveBeenCalledWith(1);
+    // Check if the correct action was dispatched
+    expect(mockDispatch).toHaveBeenCalledWith(usersListSlice.fetchUserById(1));
   });
 
-  it('handles empty users array', () => {
-    mockedUseAppSelector.mockReturnValue(null);
+  it('displays unmasked email for the selected user', () => {
+    // Mock unmasked user state
+    const unmaskedUser = {
+      id: 1,
+      email: 'mike@example.com',
+      first_name: 'George',
+      last_name: 'Walker',
+      avatar: 'https://example.com/avatar1.png',
+    };
 
-    render(<UsersList users={[]} />);
+    vi.mocked(storeHooks.useAppSelector).mockImplementation((selector) => {
+      if (selector === usersListSlice.selectUnmaskedUser) return unmaskedUser;
+      if (selector === usersListSlice.selectIsLoading) return false;
+      if (selector === usersListSlice.selectLoadingUserId) return null;
+      return undefined;
+    });
 
-    // No UserCard components should be rendered
-    expect(mockedUserCard).not.toHaveBeenCalled();
-    expect(screen.queryAllByTestId('user-card-mock')).toHaveLength(0);
+    render(<UsersList users={mockUsers} />);
+
+    // Check if unmasked email is displayed
+    expect(screen.getByTestId('user-1-email').textContent).toBe(
+      'mike@example.com',
+    );
+    expect(screen.getByTestId('user-1-masked').textContent).toBe('false');
+  });
+
+  it('dispatches resetUnmaskedUser when clicking on already unmasked user', () => {
+    // Mock unmasked user state
+    const unmaskedUser = {
+      id: 1,
+      email: 'mike@example.com',
+      first_name: 'George',
+      last_name: 'Walker',
+      avatar: 'https://example.com/avatar1.png',
+    };
+
+    vi.mocked(storeHooks.useAppSelector).mockImplementation((selector) => {
+      if (selector === usersListSlice.selectUnmaskedUser) return unmaskedUser;
+      if (selector === usersListSlice.selectIsLoading) return false;
+      if (selector === usersListSlice.selectLoadingUserId) return null;
+      return undefined;
+    });
+
+    render(<UsersList users={mockUsers} />);
+
+    // Click the unmask button for the already unmasked user
+    fireEvent.click(screen.getByTestId('unmask-button-1'));
+
+    // Check if the reset action was dispatched
+    expect(mockDispatch).toHaveBeenCalledWith(
+      usersListSlice.resetUnmaskedUser(),
+    );
+  });
+
+  it('shows loading state for the correct user', () => {
+    // Mock loading state for user 2
+    vi.mocked(storeHooks.useAppSelector).mockImplementation((selector) => {
+      if (selector === usersListSlice.selectUnmaskedUser) return null;
+      if (selector === usersListSlice.selectIsLoading) return true;
+      if (selector === usersListSlice.selectLoadingUserId) return 2;
+      return undefined;
+    });
+
+    render(<UsersList users={mockUsers} />);
+
+    // Check if loading state is correctly applied
+    expect(screen.getByTestId('user-1-loading').textContent).toBe('false');
+    expect(screen.getByTestId('user-2-loading').textContent).toBe('true');
   });
 });

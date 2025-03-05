@@ -1,16 +1,11 @@
 import UserCard from '@/components/user-card';
 import { render, screen } from '@testing-library/react';
 import { ClassAttributes, ImgHTMLAttributes, JSX } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Mock the maskEmail function
-vi.mock('@/lib/utils', async () => {
-  const actual = await vi.importActual('@/lib/utils');
-  return {
-    ...actual,
-    maskEmail: vi.fn(() => 'masked@example.com'),
-  };
-});
+vi.mock('@/components/ui/skeleton', () => ({
+  Skeleton: vi.fn(() => <div data-testid="skeleton-mock" />),
+}));
 
 vi.mock('next/image', () => ({
   default: (
@@ -22,6 +17,10 @@ vi.mock('next/image', () => ({
 }));
 
 describe('UserCard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const mockUser = {
     id: 1,
     email: 'john.doe@example.com',
@@ -29,6 +28,7 @@ describe('UserCard', () => {
     last_name: 'Doe',
     avatar: 'https://example.com/avatar.jpg',
     isEmailMasked: true,
+    isLoading: false,
     onUnmaskEmail: vi.fn(),
   };
 
@@ -37,7 +37,7 @@ describe('UserCard', () => {
 
     expect(screen.getByText('John Doe')).toBeInTheDocument();
 
-    expect(screen.getByText('masked@example.com')).toBeInTheDocument();
+    expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
   });
 
   it('displays actual email when not masked', () => {
@@ -45,5 +45,12 @@ describe('UserCard', () => {
     render(<UserCard {...unmaskUser} />);
 
     expect(screen.getByText('john.doe@example.com')).toBeInTheDocument();
+  });
+
+  it('displays email with skeleton when isLoading is true', () => {
+    const unmaskUser = { ...mockUser, isEmailMasked: false, isLoading: true };
+    render(<UserCard {...unmaskUser} />);
+
+    expect(screen.getByTestId('skeleton-mock')).toBeInTheDocument();
   });
 });
