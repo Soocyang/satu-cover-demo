@@ -1,7 +1,7 @@
+import { CONFIGS } from '@/lib/configs';
+import { User } from '@/types/user';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '.';
-import { User } from '@/types/user';
-import { getUserById } from '@/app/(protected)/actions';
 
 export type UsersListState = {
   unmaskedUser: User | null;
@@ -19,8 +19,15 @@ const initialState: UsersListState = {
 
 export const fetchUserById = createAsyncThunk(
   'usersList/fetchUserById',
-  async (userId: number) => {
-    const { data } = await getUserById(userId);
+  async (userId: number): Promise<User> => {
+    const res = await fetch(`${CONFIGS.WEB_API_URL}/users/${userId}`);
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+
+    const { data } = await res.json();
+
     return data;
   },
 );

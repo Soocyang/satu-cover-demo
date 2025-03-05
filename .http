@@ -1,5 +1,12 @@
 # VSCode Extension: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 
 @base-url=https://reqres.in/api
+@web-url=http://localhost:3000/api
 
 GET {{base-url}}/users
+
+###
+
+GET {{web-url}}/users/2
+
+###
