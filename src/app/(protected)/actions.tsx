@@ -1,18 +1,8 @@
 import { CONFIGS } from '@/lib/configs';
 import { convertObjectToURLParams } from '@/lib/helpers';
 import { maskEmail } from '@/lib/utils';
-import { ListRequest, ListResponse, Response } from '@/types/common';
+import { ListRequest, ListResponse } from '@/types/common';
 import { User } from '@/types/user';
-
-export async function getUserById(id: number): Promise<Response<User>> {
-  const res = await fetch(`${CONFIGS.BASE_API_URL}/users/${id}`);
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch user data');
-  }
-
-  return res.json();
-}
 
 export async function getUsersData(
   query: ListRequest = {},
