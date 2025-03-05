@@ -4,6 +4,7 @@ import {
   transformUsersList,
 } from '@/app/(protected)/actions';
 import { CONFIGS } from '@/lib/configs';
+import { maskEmail } from '@/lib/utils';
 import { User } from '@/types/user';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -76,8 +77,18 @@ describe('User Actions', () => {
     it('should fetch all pages of user data and combine them', async () => {
       const mockFirstPage = {
         data: [
-          { id: 1, first_name: 'George', last_name: 'Smith' },
-          { id: 2, first_name: 'Alice', last_name: 'Williams' },
+          {
+            id: 1,
+            first_name: 'George',
+            last_name: 'Smith',
+            email: 'george.smith@reqres.in',
+          },
+          {
+            id: 2,
+            first_name: 'Alice',
+            last_name: 'Williams',
+            email: 'alice.williams@reqres.in',
+          },
         ],
         page: 1,
         total_pages: 3,
@@ -85,8 +96,18 @@ describe('User Actions', () => {
 
       const mockSecondPage = {
         data: [
-          { id: 3, first_name: 'Bob', last_name: 'Wilson' },
-          { id: 4, first_name: 'Greg', last_name: 'Johnson' },
+          {
+            id: 3,
+            first_name: 'Bob',
+            last_name: 'Wilson',
+            email: 'bob.wilson@reqres.in',
+          },
+          {
+            id: 4,
+            first_name: 'Greg',
+            last_name: 'Johnson',
+            email: 'greg.johnson@reqres.in',
+          },
         ],
         page: 2,
         total_pages: 3,
@@ -94,8 +115,18 @@ describe('User Actions', () => {
 
       const mockThirdPage = {
         data: [
-          { id: 5, first_name: 'Charlie', last_name: 'Washington' },
-          { id: 6, first_name: 'Diana', last_name: 'Brown' },
+          {
+            id: 5,
+            first_name: 'Charlie',
+            last_name: 'Washington',
+            email: 'charlie.washington@reqres.in',
+          },
+          {
+            id: 6,
+            first_name: 'Diana',
+            last_name: 'Brown',
+            email: 'diana.brown@reqres.in',
+          },
         ],
         page: 3,
         total_pages: 3,
@@ -136,11 +167,36 @@ describe('User Actions', () => {
       );
 
       expect(result).toEqual([
-        { id: 1, first_name: 'George', last_name: 'Smith' },
-        { id: 2, first_name: 'Alice', last_name: 'Williams' },
-        { id: 3, first_name: 'Bob', last_name: 'Wilson' },
-        { id: 4, first_name: 'Greg', last_name: 'Johnson' },
-        { id: 5, first_name: 'Charlie', last_name: 'Washington' },
+        {
+          id: 1,
+          first_name: 'George',
+          last_name: 'Smith',
+          email: '************@reqres.in',
+        },
+        {
+          id: 2,
+          first_name: 'Alice',
+          last_name: 'Williams',
+          email: '**************@reqres.in',
+        },
+        {
+          id: 3,
+          first_name: 'Bob',
+          last_name: 'Wilson',
+          email: '**********@reqres.in',
+        },
+        {
+          id: 4,
+          first_name: 'Greg',
+          last_name: 'Johnson',
+          email: '************@reqres.in',
+        },
+        {
+          id: 5,
+          first_name: 'Charlie',
+          last_name: 'Washington',
+          email: '******************@reqres.in',
+        },
       ]);
     });
   });
@@ -191,20 +247,24 @@ describe('User Actions', () => {
           avatar: '',
         },
       ];
+      const mockUsersResult = users.map((user) => ({
+        ...user,
+        email: maskEmail(user.email),
+      }));
 
       const result = transformUsersList(users);
 
       expect(result).toHaveLength(5);
       expect(result).toEqual(
         expect.arrayContaining([
-          users[0], // George Smith
-          users[1], // Alice Williams
-          users[2], // Bob Wilson
-          users[3], // Greg Johnson
-          users[4], // Charlie Washington
+          mockUsersResult[0], // George Smith
+          mockUsersResult[1], // Alice Williams
+          mockUsersResult[2], // Bob Wilson
+          mockUsersResult[3], // Greg Johnson
+          mockUsersResult[4], // Charlie Washington
         ]),
       );
-      expect(result).not.toContainEqual(users[5]); // Diana Brown
+      expect(result).not.toContainEqual(mockUsersResult[5]); // Diana Brown
     });
 
     it('should return empty array when no users match the criteria', () => {
@@ -213,14 +273,14 @@ describe('User Actions', () => {
           id: 1,
           first_name: 'Alice',
           last_name: 'Smith',
-          email: 'alice@example.com',
+          email: '******@example.com',
           avatar: '',
         },
         {
           id: 2,
           first_name: 'Bob',
           last_name: 'Jones',
-          email: 'bob@example.com',
+          email: '*****@example.com',
           avatar: '',
         },
       ];
