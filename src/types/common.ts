@@ -14,4 +14,9 @@ export type ListResponse<ListItem> = {
   data: ListItem[];
 };
 
+export type Response<Item> = {
+  data: Item;
+  support: Record<string, unknown>;
+};
+
 export type PublicRoutes = (typeof CONFIGS.PUBLIC_ROUTES)[number];
