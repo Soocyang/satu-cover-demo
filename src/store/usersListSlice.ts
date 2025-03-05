@@ -1,31 +1,65 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '.';
+import { User } from '@/types/user';
+import { getUserById } from '@/app/(protected)/actions';
 
 export type UsersListState = {
-  currentUserId: number | null;
+  unmaskedUser: User | null;
+  isLoading: boolean;
+  loadingUserId: number | null;
+  error: string | null;
 };
 
 const initialState: UsersListState = {
-  currentUserId: null,
+  unmaskedUser: null,
+  isLoading: false,
+  loadingUserId: null,
+  error: null,
 };
+
+export const fetchUserById = createAsyncThunk(
+  'usersList/fetchUserById',
+  async (userId: number) => {
+    const { data } = await getUserById(userId);
+    return data;
+  },
+);
 
 export const usersListSlice = createSlice({
   name: 'users-list',
   initialState,
   reducers: {
-    handleToggleEmailMask: (
-      state,
-      action: PayloadAction<UsersListState['currentUserId']>,
-    ) => {
-      state.currentUserId =
-        action.payload === state.currentUserId ? null : action.payload;
+    resetUnmaskedUser: (state) => {
+      state.unmaskedUser = null;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUserById.pending, (state, action) => {
+        state.loadingUserId = action.meta.arg;
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserById.fulfilled, (state, action) => {
+        state.loadingUserId = null;
+        state.isLoading = false;
+        state.unmaskedUser = action.payload;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.loadingUserId = null;
+        state.isLoading = false;
+        state.error = action.error.message || 'Failed to fetch user';
+      });
   },
 });
 
-export const { handleToggleEmailMask } = usersListSlice.actions;
+export const { resetUnmaskedUser } = usersListSlice.actions;
 
-export const selectCurrentUserId = (state: RootState) =>
-  state.usersList.currentUserId;
+export const selectUnmaskedUser = (state: RootState) =>
+  state.usersList.unmaskedUser;
+
+export const selectIsLoading = (state: RootState) => state.usersList.isLoading;
+export const selectLoadingUserId = (state: RootState) =>
+  state.usersList.loadingUserId;
 
 export default usersListSlice.reducer;

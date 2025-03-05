@@ -1,6 +1,5 @@
 'use client';
 
-import { maskEmail } from '@/lib/utils';
 import { DisplayUser } from '@/types/user';
 import { EllipsisVerticalIcon, EyeIcon, EyeOffIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -12,8 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import { Skeleton } from './ui/skeleton';
 
 type UserCardProps = DisplayUser & {
+  isLoading: boolean;
   onUnmaskEmail: (id: number) => void;
 };
 
@@ -24,6 +25,7 @@ export default function UserCard({
   last_name,
   avatar,
   isEmailMasked,
+  isLoading,
   onUnmaskEmail,
 }: UserCardProps) {
   return (
@@ -34,12 +36,12 @@ export default function UserCard({
           <AvatarFallback>{first_name?.slice(0, 1)}</AvatarFallback>
         </Avatar>
 
-        <div className="my-auto">
+        <div className="flex flex-col gap-1">
           <CardTitle>
             {first_name} {last_name}
           </CardTitle>
-          <CardDescription>
-            {isEmailMasked ? maskEmail(email) : email}
+          <CardDescription className="h-3">
+            {isLoading ? <Skeleton className="h-3 w-[150px]" /> : email}
           </CardDescription>
         </div>
 
