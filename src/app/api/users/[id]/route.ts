@@ -4,7 +4,11 @@ export async function GET(
   _request: Request,
   { params }: { params: { id: string } },
 ) {
-  const res = await fetch(`${CONFIGS.BASE_API_URL}/users/${params.id}`);
+  const res = await fetch(`${CONFIGS.BASE_API_URL}/users/${params.id}`, {
+    headers: {
+      ['x-api-key']: CONFIGS.API_KEY,
+    },
+  });
 
   if (!res.ok) {
     throw new Error('Failed to fetch user data');

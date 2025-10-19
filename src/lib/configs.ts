@@ -1,5 +1,6 @@
 export const CONFIGS = {
   BASE_API_URL: 'https://reqres.in/api',
+  API_KEY: process.env.API_KEY || 'reqres-free-v1',
   WEB_API_URL:
     process.env.NEXT_PUBLIC_VERSION === 'development'
       ? 'http://localhost:3000/api'

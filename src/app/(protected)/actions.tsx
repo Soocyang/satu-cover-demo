@@ -9,7 +9,11 @@ export async function getUsersData(
 ): Promise<ListResponse<User>> {
   const queryParams = convertObjectToURLParams(query);
 
-  const res = await fetch(`${CONFIGS.BASE_API_URL}/users?${queryParams}`);
+  const res = await fetch(`${CONFIGS.BASE_API_URL}/users?${queryParams}`, {
+    headers: {
+      ['x-api-key']: CONFIGS.API_KEY,
+    },
+  });
 
   if (!res.ok) {
     throw new Error('Failed to fetch user data');
